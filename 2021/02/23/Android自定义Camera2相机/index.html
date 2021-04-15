@@ -85,13 +85,13 @@
 <meta property="og:url" content="http://yoursite.com/2021/02/23/Android%E8%87%AA%E5%AE%9A%E4%B9%89Camera2%E7%9B%B8%E6%9C%BA/index.html">
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="Android自定义Camera2相机写在前面Google从Android 5.0 L(API 21) 版本，开始引入Camera2(android.hardware.camera2)以取代Camera1(android.hardware.Camera)相机框架。 Camera2相比于之前的Camera1架构完全不同，使用起来比较复杂，与此同时功能也变得非常强大。 此篇博客，能够帮助你快速构建并理">
-<meta property="og:image" content="https://github.com/zhijunhong/custom_camera/blob/master/art/20210224001.png">
-<meta property="og:image" content="https://github.com/zhijunhong/custom_camera/blob/master/art/20210224002.png">
+<meta property="og:image" content="https://github.com/zhijunhong/custom_camera/blob/master/art/20210224001.png?raw=true">
+<meta property="og:image" content="https://github.com/zhijunhong/custom_camera/blob/master/art/20210224002.png?raw=true">
 <meta property="article:published_time" content="2021-02-23T11:21:49.357Z">
-<meta property="article:modified_time" content="2021-04-15T07:52:46.272Z">
+<meta property="article:modified_time" content="2021-04-15T08:26:33.346Z">
 <meta property="article:author" content="Zhijun Hong">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://github.com/zhijunhong/custom_camera/blob/master/art/20210224001.png">
+<meta name="twitter:image" content="https://github.com/zhijunhong/custom_camera/blob/master/art/20210224001.png?raw=true">
 
 
 
@@ -289,7 +289,7 @@
               
                 <span class="post-meta-item-text">更新于&#58;</span>
               
-              <time title="更新于" itemprop="dateModified" datetime="2021-04-15T15:52:46+08:00">
+              <time title="更新于" itemprop="dateModified" datetime="2021-04-15T16:26:33+08:00">
                 2021-04-15
               </time>
             
@@ -336,7 +336,7 @@
 <li>……</li>
 </ol>
 <h2 id="自定义Camera2相机"><a href="#自定义Camera2相机" class="headerlink" title="自定义Camera2相机"></a>自定义Camera2相机</h2><h3 id="一些概念"><a href="#一些概念" class="headerlink" title="一些概念"></a>一些概念</h3><h4 id="1-Pipeline"><a href="#1-Pipeline" class="headerlink" title="1. Pipeline"></a>1. Pipeline</h4><p>Camera2的API模型被设计成一个 Pipeline（管道），它按顺序处理每一帧的请求并返回请求结果给客户端。下面这张来自官方的图展示了Pipeline的工作流程，我们会通过一个简单的例子详细解释这张图。</p>
-<p><img src="https://github.com/zhijunhong/custom_camera/blob/master/art/20210224001.png" alt="img"></p>
+<p><img src="https://github.com/zhijunhong/custom_camera/blob/master/art/20210224001.png?raw=true" alt="img"></p>
 <p>Pipeline示意图</p>
 <p>为了解释上面的示意图，假设我们想要同时拍摄两张不同尺寸的图片，并且在拍摄的过程中闪光灯必须亮起来。整个拍摄流程如下：</p>
 <ol>
@@ -396,7 +396,7 @@
 <td align="left">用于从相机打开的通道中读取需要的格式的原始图像数据，可以设置多个ImageReader。</td>
 </tr>
 </tbody></table>
-<h3 id="开发流程"><a href="#开发流程" class="headerlink" title="开发流程"></a>开发流程</h3><p><img src="https://github.com/zhijunhong/custom_camera/blob/master/art/20210224002.png" alt="img"></p>
+<h3 id="开发流程"><a href="#开发流程" class="headerlink" title="开发流程"></a>开发流程</h3><p><img src="https://github.com/zhijunhong/custom_camera/blob/master/art/20210224002.png?raw=true" alt="img"></p>
 <h4 id="1-获取CameraManager"><a href="#1-获取CameraManager" class="headerlink" title="1.获取CameraManager"></a>1.获取CameraManager</h4><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">val</span> cameraManager: CameraManager <span class="keyword">by</span> lazy &#123; getSystemService(CameraManager::<span class="class"><span class="keyword">class</span>.<span class="title">java</span>) &#125;</span></span><br></pre></td></tr></table></figure>
 
 <h4 id="2-获取相机信息"><a href="#2-获取相机信息" class="headerlink" title="2.获取相机信息"></a>2.获取相机信息</h4><figure class="highlight kotlin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> cameraIdList = cameraManager.cameraIdList</span><br><span class="line">cameraIdList.forEach &#123; cameraId -&gt;</span><br><span class="line">    <span class="keyword">val</span> cameraCharacteristics = cameraManager.getCameraCharacteristics(cameraId)</span><br><span class="line">    <span class="keyword">if</span> (cameraCharacteristics.isHardwareLevelSupported(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_FULL)) &#123;</span><br><span class="line">        <span class="keyword">if</span> (cameraCharacteristics[CameraCharacteristics.LENS_FACING] == CameraCharacteristics.LENS_FACING_FRONT) &#123;</span><br><span class="line">            frontCameraId = cameraId</span><br><span class="line">            frontCameraCharacteristics = cameraCharacteristics</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (cameraCharacteristics[CameraCharacteristics.LENS_FACING] == CameraCharacteristics.LENS_FACING_BACK) &#123;</span><br><span class="line">            backCameraId = cameraId</span><br><span class="line">            backCameraCharacteristics = cameraCharacteristics</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
